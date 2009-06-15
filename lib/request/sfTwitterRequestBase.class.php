@@ -24,12 +24,31 @@ abstract class sfTwitterRequestBase
     self::METHOD_DELETE => self::METHOD_DELETE 
   );
 
-  protected $domain = '';
+  protected $options = array(
+    'http_adapter' => 'sfTwitterCurlAdapter'
+  );
+
+  protected $parameters = array();
   protected $method = 'get';
   protected $responseFormat = 'xml';
   protected $username = '';
   protected $password = '';
   protected $uri = '';
+
+  public function __construct()
+  {
+    $this->configure();
+  }
+
+  public function configure()
+  {
+    
+  }
+
+  public function setParameter($name, $value)
+  {
+    $this->parameters[$name] = $value;
+  }
 
   public function setUsername($username)
   {
@@ -58,6 +77,7 @@ abstract class sfTwitterRequestBase
       $adapter = new sfTwitterCurlAdapter();
       $adapter->setUsername($this->username);
       $adapter->setPassword($this->password);
+
       return $adapter->send($this->getUri(), $this->getMethod());
     }
     catch (Exception $e)

@@ -2,6 +2,8 @@
 
 abstract class sfTwitterClientBase
 {
+  const DOMAIN = 'http://www.twitter.com';
+
   protected $request = null;
   protected $response = null;
   protected $username = null;
@@ -54,6 +56,25 @@ abstract class sfTwitterClientBase
     return $this->response;
   }
 
+  public function getTrends()
+  {
+    
+  }
+
+  public function getCurrentTrends()
+  {
+    try
+    {
+      $request  = new sfTwitterRequestTrendsCurrent();
+
+      return $this->handle($request);
+    }
+    catch (Exception $e)
+    {
+      throw $e;
+    }
+  }
+
   public function getStatusesPublicTimeline()
   {
     try
@@ -75,5 +96,32 @@ abstract class sfTwitterClientBase
     {
       
     }
+  }
+  
+  protected function handle(sfTwitterRequest $request)
+  {
+    $response = $request->send();
+    
+    $format = $request->getResponseFormat();
+
+    $className = sprintf('sfTwitterResponse%s', ucfirst($format));
+
+    if (!class_exists($className))
+    {
+      throw new Exception(sprintf('Class %s does not exist'));
+    }
+
+    $output = $request->send();
+
+    $response = new $className();
+
+    if (!($response instanceOf sfTwitterResponse))
+    {
+      throw new Exception(sprintf('%s is not an instance of sfTwitterResponse class', $className));
+    }
+
+    $response->setContent($output);
+
+    return $response;
   }
 }

@@ -4,6 +4,7 @@ class sfTwitterCurlAdapter
 {
   protected $username = '';
   protected $password = '';
+  protected $statusCode = null;
   protected $connection = null;
 
   /**
@@ -17,6 +18,26 @@ class sfTwitterCurlAdapter
     {
       throw new InvalidServerConfigurationException('The sfTwitterApiPlugin needs the curl extension to be loaded');
     }
+  }
+
+  /**
+   * Sets the status code
+   *
+   * @param int $code The http status code
+   */
+  public function setStatusCode($code)
+  {
+    $this->statusCode = (int) $code;
+  }
+
+  /**
+   * Returns the http status code
+   *
+   * @return int
+   */
+  public function getStatusCode()
+  {
+    return $this->statusCode;
   }
 
   /**
@@ -49,11 +70,19 @@ class sfTwitterCurlAdapter
     return sprintf('%s:%s', $this->username, $this->password);
   }
 
+  /**
+   * Sets a CURL option
+   *
+   * @param string $name
+   * @param mixed $value
+   *
+   * @throws Exception
+   */
   public function setOption($name, $value)
   {
     if (!$this->connection)
     {
-      throw new Exception('The CURL connection is not initialized yet');
+      throw new Exception('The CURL connection is not yet initialized');
     }
 
     curl_setopt($this->connection, $name, $value);
@@ -154,7 +183,7 @@ class sfTwitterCurlAdapter
 
     $response = curl_exec($this->connection);
 
-    $statusCode = curl_getinfo($this->connection, CURLINFO_HTTP_CODE);
+    $this->setStatusCode(curl_getinfo($this->connection, CURLINFO_HTTP_CODE));
 
     curl_close($this->connection);
 
