@@ -116,7 +116,7 @@ abstract class sfTwitterClientBase
       $request->setResponseFormat($this->getResponseFormat());
       $request->setUsername($this->username);
       $request->setPassword($this->password);
-      $requestt->setUri('http://twitter.com/statuses/public_timeline.xml');
+      $request->setUri('http://twitter.com/statuses/public_timeline.xml');
       $request->setMethod(sfTwitterRequestBase::METHOD_GET);
 
       return $this->handle($request);
