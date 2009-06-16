@@ -19,6 +19,6 @@ class sfTwitterRequestTrendsCurrent extends sfTwitterRequestTrend
    */
   public function excludeHashtags()
   {
-    $this->setParameter('exclude', 'hashtags')
+    $this->setParameter('exclude', 'hashtags');
   }
 }
