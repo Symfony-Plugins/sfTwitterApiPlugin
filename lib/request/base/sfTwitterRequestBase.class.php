@@ -61,7 +61,13 @@ abstract class sfTwitterRequestBase
   {
     return $this->httpAdapter;
   }
-  
+
+  /**
+   * Sets a request parameter
+   *
+   * @param string $name  The parameter's name
+   * @param string $value The parameter's value
+   */
   public function setParameter($name, $value)
   {
     $this->parameters[$name] = $value;
@@ -87,6 +93,11 @@ abstract class sfTwitterRequestBase
     return $this->uri;
   }
 
+  /**
+   * Sends the request
+   *
+   * @return string The response
+   */
   public function send()
   {
   	if (!$this->httpAdapter)
@@ -96,10 +107,13 @@ abstract class sfTwitterRequestBase
 
     try
     {
+      $this->httpAdapter->setUri($this->getUri());
+      $this->httpAdapter->setMethod($this->getMethod());
+      $this->httpAdapter->setParameters($this->getParameters());
       $this->httpAdapter->setUsername($this->username);
       $this->httpAdapter->setPassword($this->password);
 
-      return $this->httpAdapter->send($this->getUri(), $this->getMethod());
+      return $this->httpAdapter->send();
     }
     catch (Exception $e)
     {
@@ -116,12 +130,7 @@ abstract class sfTwitterRequestBase
   {
     if (!array_key_exists($method, $this->methods))
     {
-      throw new InvalidArgumentException(sprintf(
-        '%s::%s() method does not support the "%s" http method',
-        __CLASS__,
-        __METHOD__,
-        $method
-      ));
+      throw new InvalidArgumentException(sprintf('%s::%s() method does not support the "%s" http method', __CLASS__, __METHOD__, $method));
     }
 
     $this->method = $method;
@@ -156,12 +165,7 @@ abstract class sfTwitterRequestBase
   {
     if (!array_key_exists($format, $this->formats))
     {
-      throw new InvalidArgumentException(sprintf(
-        '%s::%s() method does not support the "%s" format',
-        __CLASS__,
-        __METHOD__,
-        $format
-      ));
+      throw new InvalidArgumentException(sprintf('%s::%s() method does not support the "%s" format', __CLASS__, __METHOD__, $format));
     }
 
     $this->responseFormat = $format;
