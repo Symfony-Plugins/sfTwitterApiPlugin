@@ -24,16 +24,13 @@ abstract class sfTwitterRequestBase
     self::METHOD_DELETE => self::METHOD_DELETE 
   );
 
-  protected $options = array(
-    'http_adapter' => 'sfTwitterCurlAdapter'
-  );
-
   protected $parameters = array();
   protected $method = 'get';
   protected $responseFormat = 'xml';
   protected $username = '';
   protected $password = '';
   protected $uri = '';
+  protected $httpAdapter = null;
 
   public function __construct()
   {
@@ -45,6 +42,26 @@ abstract class sfTwitterRequestBase
     
   }
 
+  /**
+   * Sets the http adapter
+   * 
+   * @param sfTwitterHttpAdapter $httpAdapter
+   */
+  public function setHttpAdapter(sfTwitterHttpAdapter $httpAdapter)
+  {
+    $this->httpAdapter = $httpAdapter;
+  }
+
+  /**
+   * Returns the http adapter
+   * 
+   * @return sfTwitterHttpAdapter
+   */
+  public function getHttpAdapter()
+  {
+    return $this->httpAdapter;
+  }
+  
   public function setParameter($name, $value)
   {
     $this->parameters[$name] = $value;
@@ -72,13 +89,17 @@ abstract class sfTwitterRequestBase
 
   public function send()
   {
+  	if (!$this->httpAdapter)
+  	{
+  		throw new Exception('The HTTP adapter object must be set');
+  	}
+
     try
     {
-      $adapter = new sfTwitterCurlAdapter();
-      $adapter->setUsername($this->username);
-      $adapter->setPassword($this->password);
+      $this->httpAdapter->setUsername($this->username);
+      $this->httpAdapter->setPassword($this->password);
 
-      return $adapter->send($this->getUri(), $this->getMethod());
+      return $this->httpAdapter->send($this->getUri(), $this->getMethod());
     }
     catch (Exception $e)
     {
