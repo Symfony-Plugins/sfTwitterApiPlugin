@@ -2,18 +2,71 @@
 
 abstract class sfTwitterClientBase
 {
-  const DOMAIN = 'http://www.twitter.com';
+	const VERSION = '0.1';
 
-  protected $request = null;
-  protected $response = null;
-  protected $username = null;
-  protected $password = null;
+  protected $username       = null;
+  protected $password       = null;
+  protected $httpAdapter    = null;
   protected $responseFormat = 'xml';
 
-  public function __construct($username, $password, array $options = array())
+  /**
+   * Constructor
+   * 
+   * @param sfTwitterHttpAdapter $httpAdapter A HTTP adapter to handle HTTP requests on the API
+   */
+  public function __construct(sfTwitterHttpAdapter $httpAdapter)
   {
-    $this->username = $username;
-    $this->password = $password;
+    $this->httpAdapter = $httpAdapter;
+  }
+
+  /**
+   * Returns the current client's version
+   * 
+   * @return string
+   */
+  public function getVersion()
+  {
+  	return self::VERSION;
+  }
+
+  /**
+   * Sets the API username
+   * 
+   * @param string $username
+   */
+  public function setUsername($username)
+  {
+  	$this->username = $username;
+  }
+
+  /**
+   * Sets the API password
+   * 
+   * @param string $password
+   */
+  public function setPassword($password)
+  {
+  	$this->password = $password;
+  }
+
+  /**
+   * Sets the http adapter
+   * 
+   * @param sfTwitterHttpAdapter $httpAdapter
+   */
+  public function setHttpAdapter(sfTwitterHttpAdapter $httpAdapter)
+  {
+  	$this->httpAdapter = $httpAdapter;
+  }
+
+  /**
+   * Returns the http adapter
+   * 
+   * @return sfTwitterHttpAdapter
+   */
+  public function getHttpAdapter()
+  {
+  	return $this->httpAdapter;
   }
 
   /**
@@ -34,26 +87,6 @@ abstract class sfTwitterClientBase
   public function getResponseFormat()
   {
     return $this->responseFormat;
-  }
-
-  /**
-   * Returns the sfTwitterRequest object
-   *
-   * @return sfTwitterRequest
-   */
-  public function getRequest()
-  {
-    return $this->request;
-  }
-
-  /**
-   * Returns the sfTwitterResponse object
-   *
-   * @return sfTwitterResponse
-   */
-  public function getResponse()
-  {
-    return $this->response;
   }
 
   public function getTrends()
@@ -79,49 +112,60 @@ abstract class sfTwitterClientBase
   {
     try
     {
-      $this->request = new sfTwitterRequest();
-      $this->request->setResponseFormat($this->getResponseFormat());
-      $this->request->setUsername($this->username);
-      $this->request->setPassword($this->password);
-      $this->request->setUri('http://twitter.com/statuses/public_timeline.xml');
-      $this->request->setMethod(sfTwitterRequestBase::METHOD_GET);
-      $response = $this->request->send();
+      $request = new sfTwitterRequest();
+      $request->setResponseFormat($this->getResponseFormat());
+      $request->setUsername($this->username);
+      $request->setPassword($this->password);
+      $requestt->setUri('http://twitter.com/statuses/public_timeline.xml');
+      $request->setMethod(sfTwitterRequestBase::METHOD_GET);
 
-      $this->response = new sfTwitterResponseXml();
-      $this->response->setContent($response);
-      
-      return $this->response;
+      return $this->handle($request);
     }
     catch (Exception $e)
     {
       
     }
   }
-  
+
+  /**
+   * Handles the twitter request
+   * 
+   * @param sfTwitterRequest $request A sfTwitterRequest object
+   * 
+   * @return sfTwitterResponse $response
+   * 
+   * @access protected
+   */
   protected function handle(sfTwitterRequest $request)
   {
-    $response = $request->send();
-    
-    $format = $request->getResponseFormat();
-
-    $className = sprintf('sfTwitterResponse%s', ucfirst($format));
+    $className = $this->getResponseClassName($request);
 
     if (!class_exists($className))
     {
       throw new Exception(sprintf('Class %s does not exist'));
     }
 
-    $output = $request->send();
+    $request->setHttpAdapter($this->getHttpAdapter());
 
     $response = new $className();
-
-    if (!($response instanceOf sfTwitterResponse))
-    {
-      throw new Exception(sprintf('%s is not an instance of sfTwitterResponse class', $className));
-    }
-
-    $response->setContent($output);
+    $response->setContent($request->send());
 
     return $response;
+  }
+
+  /**
+   * Returns the response format based on the request
+   * 
+   * @param sfTwitterRequest $request
+   * 
+   * @return string $className
+   */
+  protected function getResponseClassName(sfTwitterRequest $request)
+  {
+  	$format = $request->getResponseFormat();
+
+    $className = sprintf('sfTwitterResponse%s', ucfirst($format));
+
+    return $className;
   }
 }
