@@ -24,42 +24,41 @@ abstract class sfTwitterRequestBase
     self::METHOD_DELETE => self::METHOD_DELETE 
   );
 
+  //protected $mandatoryParameters = array();
+  protected $supportedParameters = array();
   protected $parameters = array();
   protected $method = 'get';
   protected $responseFormat = 'xml';
   protected $username = '';
   protected $password = '';
-  protected $uri = '';
-  protected $httpAdapter = null;
+  protected $apiUri = null;
 
+  /**
+   * Constructor
+   *
+   */
   public function __construct()
   {
     $this->configure();
   }
 
+  /**
+   * Configures the request
+   *
+   */
   public function configure()
   {
     
   }
 
   /**
-   * Sets the http adapter
-   * 
-   * @param sfTwitterHttpAdapter $httpAdapter
+   * Adds a supported parameter
+   *
+   * @param string $name
    */
-  public function setHttpAdapter(sfTwitterHttpAdapter $httpAdapter)
+  protected function addSupportedParameter($name)
   {
-    $this->httpAdapter = $httpAdapter;
-  }
-
-  /**
-   * Returns the http adapter
-   * 
-   * @return sfTwitterHttpAdapter
-   */
-  public function getHttpAdapter()
-  {
-    return $this->httpAdapter;
+    $this->supportedParameters[] = $name;
   }
 
   /**
@@ -73,6 +72,16 @@ abstract class sfTwitterRequestBase
     $this->parameters[$name] = $value;
   }
 
+  /**
+   * Returns the associative post and get parameters
+   *
+   * @return array
+   */
+  public function getParameters()
+  {
+    return $this->parameters;
+  }
+
   public function setUsername($username)
   {
     $this->username = $username;
@@ -83,42 +92,19 @@ abstract class sfTwitterRequestBase
     $this->password = $password;
   }
   
-  public function setUri($uri)
+  public function setApiUri($uri)
   {
-    $this->uri = $uri;
+    $this->apiUri = $uri;
+  }
+
+  public function getApiUri()
+  {
+    return $this->apiUri;
   }
   
   public function getUri()
   {
-    return $this->uri;
-  }
-
-  /**
-   * Sends the request
-   *
-   * @return string The response
-   */
-  public function send()
-  {
-  	if (!$this->httpAdapter)
-  	{
-  		throw new Exception('The HTTP adapter object must be set');
-  	}
-
-    try
-    {
-      $this->httpAdapter->setUri($this->getUri());
-      $this->httpAdapter->setMethod($this->getMethod());
-      $this->httpAdapter->setParameters($this->getParameters());
-      $this->httpAdapter->setUsername($this->username);
-      $this->httpAdapter->setPassword($this->password);
-
-      return $this->httpAdapter->send();
-    }
-    catch (Exception $e)
-    {
-      throw $e;
-    }
+    return sprintf('%s.%s', $this->getApiUri(), $this->getResponseFormat());
   }
 
   /**
