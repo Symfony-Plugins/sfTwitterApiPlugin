@@ -11,11 +11,13 @@ abstract class sfTwitterHttpAdapter
   protected $connection = null;
 
   /**
-   * Sends the request
+   * Handles the request
+   *
+   * @param sfTwitterRequest $request The request
    *
    * @return string The response
    */
-	abstract public function send();
+	abstract public function handle(sfTwitterRequest $request);
 
   /**
    * Sets the uri
