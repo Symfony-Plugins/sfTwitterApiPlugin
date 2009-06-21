@@ -1,6 +1,6 @@
 <?php
 
-class sfTwitterRequestTrendsCurrent extends sfTwitterRequestTrend
+class sfTwitterRequestTrendsCurrent extends sfTwitterRequestTrends
 {
   /**
    * Configures the request
@@ -10,7 +10,10 @@ class sfTwitterRequestTrendsCurrent extends sfTwitterRequestTrend
   {
     parent::configure();
 
-    $this->setUri('http://search.twitter.com/trends/current.json');
+    $this->addSupportedParameter('exclude');
+
+    $this->setApiUri('http://search.twitter.com/trends/current');
+    $this->setResponseFormat('json');
   }
 
   /**
