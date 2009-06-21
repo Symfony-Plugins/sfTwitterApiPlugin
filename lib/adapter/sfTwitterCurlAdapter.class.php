@@ -97,20 +97,18 @@ class sfTwitterCurlAdapter extends sfTwitterHttpAdapter
   /**
    * Sends the http request
    *
-   * @param string $uri     The uri to call
-   * @param string $method  The http method to use (get, post or delete)
-   * @param array $params   An array of post / delete fields
+   * @param sfTwitterRequestBase $request     The request
    *
    * @return string The response
    */
-  public function send($uri, $method = 'get', $params = array())
+  public function handle(sfTwitterRequest $request)
   {
     try
     {
       $this->connection = curl_init();
-      $this->setOption(CURLOPT_HEADER, true);
-      $this->setUri($uri);
-      $this->setHttpMethod($method, $params);
+      $this->setOption(CURLOPT_HEADER, false);
+      $this->setUri($request->getUri());
+      $this->setHttpMethod($request->getMethod(), $request->getParameters());
       //$this->setHttpAuthStrategy();
       //$this->setUserAndPassword();
       //$this->setSslControl();
