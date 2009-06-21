@@ -133,22 +133,20 @@ abstract class sfTwitterClientBase
    * @param sfTwitterRequest $request A sfTwitterRequest object
    * 
    * @return sfTwitterResponse $response
-   * 
-   * @access protected
    */
-  protected function handle(sfTwitterRequest $request)
+  public function handle(sfTwitterRequest $request)
   {
     $className = $this->getResponseClassName($request);
 
     if (!class_exists($className))
     {
-      throw new Exception(sprintf('Class %s does not exist'));
+      throw new Exception(sprintf('Class %s does not exist', $className));
     }
 
-    $request->setHttpAdapter($this->getHttpAdapter());
+    $output = $this->httpAdapter->handle($request);
 
     $response = new $className();
-    $response->setContent($request->send());
+    $response->setContent($output);
 
     return $response;
   }
