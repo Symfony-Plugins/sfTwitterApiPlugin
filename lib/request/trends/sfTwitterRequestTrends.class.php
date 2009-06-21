@@ -9,7 +9,6 @@ class sfTwitterRequestTrends extends sfTwitterRequest
   public function configure()
   {
     $this->setResponseFormat('json');
-
-    $this->setUri('http://search.twitter.com/trends/current.json');
+    $this->setApiUri('http://search.twitter.com/trends/current');
   }
 }
