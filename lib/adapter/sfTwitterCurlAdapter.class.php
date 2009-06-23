@@ -2,6 +2,8 @@
 
 class sfTwitterCurlAdapter extends sfTwitterHttpAdapter 
 {
+  protected $options = array();
+
   /**
    * Constructor
    *
@@ -28,98 +30,224 @@ class sfTwitterCurlAdapter extends sfTwitterHttpAdapter
   /**
    * Sets a CURL option
    *
-   * @param string $name
+   * @param int $name
    * @param mixed $value
    *
    * @throws Exception
    */
   public function setOption($name, $value)
   {
-    if (!$this->connection)
-    {
-      throw new Exception('The CURL connection is not yet initialized');
-    }
-
-    curl_setopt($this->connection, $name, $value);
+    $this->options[$name] = $value;
   }
 
+  /**
+   * Returns an option value
+   *
+   * @param int $name The option value to get
+   *
+   * @return mixed
+   */
+  public function getOption($name)
+  {
+    if (!isset($this->options[$name]))
+    {
+      return;
+    }
+
+    return $this->options[$name];
+  }
+
+  /**
+   * Returns the options array
+   *
+   * @return array
+   */
+  public function getOptions()
+  {
+    return $this->options;
+  }
+
+  /**
+   * Sets the CURL URI to call
+   *
+   * @param string $uri The HTTP URI
+   */
   public function setUri($uri)
   {
     $this->setOption(CURLOPT_URL, $uri);
   }
 
+  /**
+   * Sets the authentification strategy
+   *
+   */
   public function setHttpAuthStrategy()
   {
     $this->setOption(CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
   }
 
+  /**
+   * Sets user and password for HTTP authentification
+   *
+   */
   public function setUserAndPassword()
   {
     $this->setOption(CURLOPT_USERPWD, $this->getIdentifiantsForAuthenfication());
   }
 
-  public function setSslControl()
+  /**
+   * Disables the SSL connection
+   *
+   */
+  public function disableSslControl()
   {
     $this->setOption(CURLOPT_SSL_VERIFYPEER, false);
   }
 
-  public function setReturnedResponseFormat($format)
+  /**
+   * Enables the SSL connection
+   *
+   */
+  public function enableSslControl()
   {
-    $this->setOption(CURLOPT_RETURNTRANSFER, $format);
+    $this->setOption(CURLOPT_SSL_VERIFYPEER, true);
   }
 
-  public function setHttpMethod($method, $params = array())
+  /**
+   * Disables the direct output on the default standard output
+   *
+   */
+  public function disableOutput()
   {
-    switch ($method)
+    $this->setOption(CURLOPT_RETURNTRANSFER, true);
+  }
+
+  /**
+   * Builds the CURL request
+   *
+   */
+  protected function buildRequest()
+  {
+    switch ($this->request->getMethod())
     {
-      case 'get':
-        break;
-      
       case 'post':
-        $this->setOption(CURLOPT_POST, true);
-        $this->setOption(CURLOPT_POSTFIELDS, $params);
+        $this->buildPostRequest();
         break;
         
       case 'delete':
-        $this->setOption(CURLOPT_CUSTOMREQUEST, 'DELETE');
-        $this->setOption(CURLOPT_POSTFIELDS, $params);
+        $this->buildDeleteRequest();
         break;
-      
+
       default:
-        throw new InvalidArgumentException(sprintf(
-          'Unknown "%s" http method',
-          $method
-        ));
+        $this->buildGetRequest();
         break;
     }
   }
 
   /**
+   * Returns the escaped query string for a GET request
+   *
+   * @return string
+   */
+  protected function getQueryString()
+  {
+    $query = null;
+    $params = $this->request->getParameters();
+
+    if (count($params))
+    {
+      $query = http_build_query($params);
+    }
+
+    return $query;
+  }
+
+  /**
+   * Prepapres a GET request
+   *
+   */
+  protected function buildGetRequest()
+  {
+    $query = $this->getQueryString();
+
+    $uri = $this->request->getUri();
+
+    if ($query)
+    {
+      $uri .= '?' . $query;
+    }
+
+    $this->setUri($uri);
+  }
+
+  /**
+   * Prepapres a POST request
+   *
+   */
+  protected function buildPostRequest()
+  {
+    $this->setOption(CURLOPT_POST, true);
+    $this->setOption(CURLOPT_POSTFIELDS, $this->request->getParameters());
+  }
+
+  /**
+   * Prepapres a DELETE request
+   *
+   */
+  protected function buildDeleteRequest()
+  {
+    $this->setOption(CURLOPT_CUSTOMREQUEST, 'DELETE');
+    $this->setOption(CURLOPT_POSTFIELDS, $this->request->getParameters());
+  }
+
+  /**
    * Sends the http request
    *
-   * @param sfTwitterRequestBase $request     The request
+   * @param sfTwitterRequest $request The request
    *
    * @return string The response
    */
   public function handle(sfTwitterRequest $request)
   {
+    $this->request = $request;
+
     try
     {
-      $this->connection = curl_init();
-      $this->setOption(CURLOPT_HEADER, false);
-      $this->setUri($request->getUri());
-      $this->setHttpMethod($request->getMethod(), $request->getParameters());
-      //$this->setHttpAuthStrategy();
-      //$this->setUserAndPassword();
-      //$this->setSslControl();
-      $this->setReturnedResponseFormat(1);
+      $this->prepare();
+
+      return $this->exec();
     }
-    catch (InvalidArgumentException $e)
+    catch (Exception $e)
     {
       throw $e;
     }
+  }
 
-    return $this->exec();
+  /**
+   * Prepare the CURL request
+   *
+   * @access protected
+   */
+  protected function prepare()
+  {
+    $this->buildRequest();
+    $this->disableOutput();
+    
+    //$this->setHttpAuthStrategy();
+    //$this->setUserAndPassword();
+    //$this->disableSslControl();
+  }
+
+  /**
+   * Returns a response information
+   *
+   * @param string $name The info to get
+   *
+   * @return string
+   */
+  public function getResponseInfo($name)
+  {
+    return curl_getinfo($this->connection, $name);
   }
 
   /**
@@ -131,12 +259,17 @@ class sfTwitterCurlAdapter extends sfTwitterHttpAdapter
   {
     if (!$this->connection)
     {
-      return;
+      $this->connection = curl_init();
+    }
+
+    foreach ($this->options as $key => $value)
+    {
+      curl_setopt($this->connection, $key, $value);
     }
 
     $response = curl_exec($this->connection);
 
-    $this->setStatusCode(curl_getinfo($this->connection, CURLINFO_HTTP_CODE));
+    $this->setStatusCode($this->getResponseInfo(CURLINFO_HTTP_CODE));
 
     curl_close($this->connection);
 

@@ -2,11 +2,9 @@
 
 abstract class sfTwitterHttpAdapter
 {
+  protected $request = null;
 	protected $username = '';
   protected $password = '';
-  protected $uri = '';
-  protected $method = '';
-  protected $parameters = array();
   protected $statusCode = null;
   protected $connection = null;
 
@@ -20,63 +18,23 @@ abstract class sfTwitterHttpAdapter
 	abstract public function handle(sfTwitterRequest $request);
 
   /**
-   * Sets the uri
+   * Returns the request
    *
-   * @param string $uri The uri
+   * @return sfTwitterRequest
    */
-  public function setUri($uri)
+  public function getRequest()
   {
-    $this->uri = $uri;
+    return $this->request;
   }
 
   /**
-   * Returns the uri
+   * Sets the request
    *
-   * @return string
+   * @param sfTwitterRequest $request
    */
-  public function getUri()
+  public function setRequest(sfTwitterRequest $request)
   {
-    return $this->uri;
-  }
-
-  /**
-   * Sets the http method
-   *
-   * @param string $method
-   */
-  public function setMethod($method)
-  {
-    $this->method = $method;
-  }
-
-  /**
-   * Returns the http method
-   *
-   * @return string
-   */
-  public function getMethod()
-  {
-    return $this->method;
-  }
-
-  /**
-   * Sets the request parameters
-   *
-   * @param array $parameters An associative array of key => value pair
-   */
-  public function setParameters(array $parameters)
-  {
-    $this->parameters = $parameters;
-  }
-
-  /**
-   * Returns the request parameters
-   *
-   * @param array The request parameters
-   */
-  public function getParameters()
-  {
-    return $this->parameters;
+    $this->request = $request;
   }
 
   /**

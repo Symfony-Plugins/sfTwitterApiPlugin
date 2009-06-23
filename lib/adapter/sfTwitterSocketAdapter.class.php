@@ -1,6 +1,6 @@
 <?php
 
-class sfTwitterStreamAdapter extends sfTwitterHttpAdapter 
+class sfTwitterSocketAdapter extends sfTwitterHttpAdapter 
 {
 	public function handle(sfTwitterRequest $request)
 	{
