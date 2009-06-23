@@ -2,5 +2,5 @@
 
 class sfTwitterResponseAtom extends sfTwitterResponseXml
 {
-  
+
 }
