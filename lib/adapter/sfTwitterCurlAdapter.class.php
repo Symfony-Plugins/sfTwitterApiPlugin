@@ -163,7 +163,7 @@ class sfTwitterCurlAdapter extends sfTwitterHttpAdapter
   }
 
   /**
-   * Prepapres a GET request
+   * Prepares a GET request
    *
    */
   protected function buildGetRequest()
@@ -181,21 +181,23 @@ class sfTwitterCurlAdapter extends sfTwitterHttpAdapter
   }
 
   /**
-   * Prepapres a POST request
+   * Prepares a POST request
    *
    */
   protected function buildPostRequest()
   {
+    $this->setUri($this->request->getUri());
     $this->setOption(CURLOPT_POST, true);
     $this->setOption(CURLOPT_POSTFIELDS, $this->request->getParameters());
   }
 
   /**
-   * Prepapres a DELETE request
+   * Prepares a DELETE request
    *
    */
   protected function buildDeleteRequest()
   {
+    $this->setUri($this->request->getUri());
     $this->setOption(CURLOPT_CUSTOMREQUEST, 'DELETE');
     $this->setOption(CURLOPT_POSTFIELDS, $this->request->getParameters());
   }
