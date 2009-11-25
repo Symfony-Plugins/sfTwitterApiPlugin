@@ -116,7 +116,7 @@ abstract class sfTwitterClientBase
       $request->setResponseFormat($this->getResponseFormat());
       $request->setUsername($this->username);
       $request->setPassword($this->password);
-      $request->setUri('http://twitter.com/statuses/public_timeline.xml');
+      $request->setApiUri('http://twitter.com/statuses/public_timeline.xml');
       $request->setMethod(sfTwitterRequestBase::METHOD_GET);
 
       return $this->handle($request);
@@ -137,7 +137,7 @@ abstract class sfTwitterClientBase
   public function handle(sfTwitterRequest $request)
   {
     $className = $this->getResponseClassName($request);
-
+    
     if (!class_exists($className))
     {
       throw new Exception(sprintf('Class %s does not exist', $className));
