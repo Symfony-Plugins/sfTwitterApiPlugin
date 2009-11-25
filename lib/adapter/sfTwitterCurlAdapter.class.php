@@ -170,7 +170,7 @@ class sfTwitterCurlAdapter extends sfTwitterHttpAdapter
   {
     $query = $this->getQueryString();
 
-    $uri = $this->request->getUri();
+    $uri = $this->request->getApiUri();
 
     if ($query)
     {
